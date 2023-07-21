@@ -61,12 +61,12 @@ class classCamera(QtWidgets.QWidget):
         self.f4 = finger_angle[3]   # 無名指角度
         self.f5 = finger_angle[4]   # 小拇指角度
 
-        # 小於 50 表示手指伸直，大於等於 50 表示手指捲縮
-        if   self.f2>=50 and self.f3>=50 and self.f4>=50 and self.f5>=50:
+        # 小於 70 表示手指伸直，大於等於 70 表示手指捲縮
+        if   self.f2>=70 and self.f3>=70 and self.f4>=70 and self.f5>=70:
             return '0'
-        elif self.f2<50 and self.f3>=50 and self.f4>=50 and self.f5>=50:
+        elif self.f2<70 and self.f3>=70 and self.f4>=70 and self.f5>=70:
             return '1'
-        elif self.f2<50 and self.f3<50 and self.f4<50 and self.f5<50:
+        elif self.f2<70 and self.f3<70 and self.f4<70 and self.f5<70:
             return '5'
         else:
             return ''
@@ -79,6 +79,9 @@ class classCamera(QtWidgets.QWidget):
         max_num_hands=1,
         min_detection_confidence=0.5,
         min_tracking_confidence=0.5)
+        
+        #fourcc = cv2.VideoWriter_fourcc(*'mp4v')          # 設定影片的格式為 mp4v
+        #out = cv2.VideoWriter('l1.mp4', fourcc, 20.0, (540,  310))  # 產生空的影片
                                         
         while self.model != 'end':
             ret, self.img = self.cap.read()
@@ -113,14 +116,18 @@ class classCamera(QtWidgets.QWidget):
                                     print(self.model)
                                 # cv2.putText(self.img, text, (30,120), fontFace, 3, (255,255,255), 10, lineType) # 印出文字    
                         # print (finger_coordinate)
+                        #print (self.f2)
+            
+            self.img = cv2.flip(self.img, 1)  # 1 表示水平翻轉
             
             self.cTime = time.time()
             fps = 1/(self.cTime-self.pTime)
             self.pTime = self.cTime
-            cv2.putText(self.img, f"FPS : {int(fps)}", (130, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+            cv2.putText(self.img, f"FPS : {int(fps)}", (60, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
             centerX , centerY = w//2 , h//2
-            cv2.rectangle(self.img,(centerX-100,centerY-100),(centerX+100,centerY+100),(0,0,255),2)   # 畫出中間
-            #cv2.imshow('camera', self.img)
+            cv2.rectangle(self.img,(centerX-70,centerY-70),(centerX+70,centerY+70),(0,0,255),2)   # 畫出中間
+            #out.write(self.img)       # 將取得的每一幀圖像寫入空的影片
+            
             self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
             height, width, channel = self.img.shape
             bytesPerline = channel * width
@@ -129,6 +136,7 @@ class classCamera(QtWidgets.QWidget):
             
             cv2.waitKey(1) 
         self.cap.release()
+        #out.release()
         cv2.destroyAllWindows()
     
     def judge(self):
@@ -139,93 +147,116 @@ class classCamera(QtWidgets.QWidget):
                 time.sleep(0.1)
                 if self.x5 >= self.x17:#右
                     if self.x8 < self.new_x - 100:#右
-                        self.signal.emit('v1')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v1');print("v1")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     elif self.x8 > self.new_x + 100:
-                        self.signal.emit('v2')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
-                    elif self.y8 < self.new_y - 100:#上
-                        self.signal.emit('v3')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
-                    elif self.y8 > self.new_y + 100:
-                        self.signal.emit('v4')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v2');print("v2")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                    elif self.y8 < self.new_y - 70:#上
+                        self.signal.emit('v3');print("v3")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                    elif self.y8 > self.new_y + 70:
+                        self.signal.emit('v4');print("v4")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     else:
                         self.t=self.t+1
-                        time.sleep(0.5)
+                        if self.t==10:
+                            time.sleep(0.5)
+                            print("請選擇模式")
+                        else:
+                            time.sleep(0.5)
                 else:#左
                     if self.x8 < self.new_x - 100:
-                        self.signal.emit('v11')
-                        print("左手")
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v11');print("v11")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     elif self.x8 > self.new_x + 100:
-                        self.signal.emit('v12')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
-                    elif self.y8 < self.new_y - 100:
-                        self.signal.emit('v13')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
-                    elif self.y8 > self.new_y + 100:
-                        self.signal.emit('v14')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v12');print("v12")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                    elif self.y8 < self.new_y - 70:
+                        self.signal.emit('v13');print("v13")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                    elif self.y8 > self.new_y + 70:
+                        self.signal.emit('v14');print("v14")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     else:
                         self.t=self.t+1
-                        time.sleep(0.5)            
+                        if self.t==10:
+                            time.sleep(0.5)
+                            print("請選擇模式")
+                        else:
+                            time.sleep(0.5)            
             while self.model == '5' and self.t!=10:
                 time.sleep(0.1)
                 if self.x5 >= self.x17:
                     if self.x8 < self.new_x - 100:
-                        self.signal.emit('v5')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v5');print("v5")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     elif self.x8 > self.new_x + 100:
-                        self.signal.emit('v6')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
-                    elif self.y8 < self.new_y - 100:
-                        self.signal.emit('v7')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
-                    elif self.y8 > self.new_y + 100:
-                        self.signal.emit('v8')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v6');print("v6")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                    elif self.y8 < self.new_y - 70:
+                        self.signal.emit('v7');print("v7")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                    elif self.y8 > self.new_y + 70 and self.new_y < 80:
+                        self.signal.emit('v8');print("v8")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     elif self.f2>=50 and self.f3>=50 and self.f4>=50 and self.f5>=50:
-                        self.signal.emit('v9')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v9');print("v9")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     else:
                         self.t=self.t+1
-                        time.sleep(0.5)
+                        if self.t==10:
+                            time.sleep(0.5)
+                            print("請選擇模式")
+                        else:
+                            time.sleep(0.5)
                 else:
                     if self.x8 < self.new_x - 100:
-                        self.signal.emit('v15')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v15');print("v15")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     elif self.x8 > self.new_x + 100:
-                        self.signal.emit('v16')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
-                    elif self.y8 < self.new_y - 100:
-                        self.signal.emit('v17')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
-                    elif self.y8 > self.new_y + 100:
-                        self.signal.emit('v18')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v16');print("v16")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                    elif self.y8 < self.new_y - 70:
+                        self.signal.emit('v17');print("v17")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                    elif self.y8 > self.new_y + 70 and self.new_y < 80:
+                        self.signal.emit('v18');print("v18")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     elif self.f2>=50 and self.f3>=50 and self.f4>=50 and self.f5>=50:
-                        self.signal.emit('v19')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v19');print("v19")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     else:
                         self.t=self.t+1
-                        time.sleep(0.5)            
+                        if self.t==10:
+                            time.sleep(0.5)
+                            print("請選擇模式")
+                        else:
+                            time.sleep(0.5)           
             while self.model == '0' and self.t!=10 :
                 time.sleep(0.1)
                 if self.x5 >= self.x17:
                     if self.f2<50 and self.f3<50 and self.f4<50 and self.f5<50:
-                        self.signal.emit('v10')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v10');print("v10")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     else:
                         self.t=self.t+1
-                        time.sleep(0.5)
+                        if self.t==10:
+                            time.sleep(0.5)
+                            print("請選擇模式")
+                        else:
+                            time.sleep(0.5)
                 else:
                     if self.f2<50 and self.f3<50 and self.f4<50 and self.f5<50:
-                        self.signal.emit('v20')
-                        time.sleep(0.5);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
+                        self.signal.emit('v20');print("v20")
+                        time.sleep(1);print("請選擇模式");self.model = self.new_x = self.new_y= None;self.t=0;break
                     else:
                         self.t=self.t+1
-                        time.sleep(0.5)
+                        if self.t==10:
+                            time.sleep(0.5)
+                            print("請選擇模式")
+                        else:
+                            time.sleep(0.5)
             if self.model != 'end':
                 self.model = self.new_x = self.new_y= None;self.t=0    
 if __name__ == '__main__':

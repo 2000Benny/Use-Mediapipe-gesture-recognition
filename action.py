@@ -1,6 +1,5 @@
 import win32con
 import win32api
-import win32gui
 import pyautogui
 
 class classAction(object):
@@ -9,16 +8,14 @@ class classAction(object):
     def volumeUp(self): # 電腦聲音+10
         n = 5
         while n:
-            win32api.keybd_event(win32con.VK_VOLUME_UP, 0)
-            win32api.keybd_event(win32con.VK_VOLUME_UP, 0, win32con.KEYEVENTF_KEYUP)
+            pyautogui.press('volumeup')
             n = n - 1  
         return
 
     def volumeDown(self): # 電腦聲音-10
         n = 5
         while n:
-            win32api.keybd_event(win32con.VK_VOLUME_DOWN, 0)
-            win32api.keybd_event(win32con.VK_VOLUME_DOWN, 0, win32con.KEYEVENTF_KEYUP)
+            pyautogui.press('volumedown')
             n = n - 1
         return
 
@@ -51,17 +48,13 @@ class classAction(object):
         return
     
     def windowRollDown(self):
-        n = 5
-        while n:
-            win32api.keybd_event(win32con.VK_DOWN, 0)
-            win32api.keybd_event(win32con.VK_DOWN, 0, win32con.KEYEVENTF_KEYUP)
-            n = n - 1
-        return
+        pyautogui.scroll(-50)
 
     def windowRollUp(self):
-        n = 5
-        while n:
-            win32api.keybd_event(win32con.VK_UP, 0)
-            win32api.keybd_event(win32con.VK_UP, 0, win32con.KEYEVENTF_KEYUP)
-            n = n - 1
-        return
+        pyautogui.scroll(50)
+    
+    def screenshot():
+        # 捕捉整個屏幕
+        screenshot = pyautogui.screenshot()
+        # 保存圖像到指定文件
+        screenshot.save('螢幕截圖.png')
